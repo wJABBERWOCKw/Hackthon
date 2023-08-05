@@ -1,0 +1,125 @@
+{% load static %}
+<html>
+
+<head>
+    <style>
+        #root {
+            width: 100vw;
+            height: 100vh;
+            }
+    </style>
+</head>
+
+
+<body>
+    <div id="root"></div>
+    <button id="caption-toggle-button">Enable Captions</button>
+    <button id="microphone-toggle-button">Enable Microphone</button>
+    
+    {% comment %} <script src="{%static 'script/index.js'%}" ></script> {% endcomment %}
+</body>
+<script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+<script>
+let captionsEnabled = true;
+window.onload = function () {
+    function getUrlParams(url) {
+       
+        let urlStr = url.split('?')[1];
+        const urlSearchParams = new URLSearchParams(urlStr);
+        const result = Object.fromEntries(urlSearchParams.entries());
+        return result;
+    }
+
+
+        // Generate a Token by calling a method.
+        // @param 1: appID
+        // @param 2: serverSecret
+        // @param 3: Room ID
+        // @param 4: User ID
+        // @param 5: Username
+    const roomID = getUrlParams(window.location.href)['roomID'] || (Math.floor(Math.random() * 10000) + "");
+    const userID = Math.floor(Math.random() * 10000) + "";
+    const userName = "{{name}}"
+    const appID = 334070391;
+    const serverSecret = "1ce9b753063c141010b91b96780042da";
+    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
+
+    
+        const zp = ZegoUIKitPrebuilt.create(kitToken);
+        zp.joinRoom({
+            container: document.querySelector("#root"),
+            sharedLinks: [{
+                name: 'Personal link',
+                url: window.location.protocol + '//' + window.location.host  + window.location.pathname + '?roomID=' + roomID,
+            }],
+            scenario: {
+                mode: ZegoUIKitPrebuilt.VideoConference,
+            },
+                
+           	turnOnMicrophoneWhenJoining: false,
+           	turnOnCameraWhenJoining: false,
+           	showMyCameraToggleButton: true,
+           	showMyMicrophoneToggleButton: true,
+           	showAudioVideoSettingsButton: true,
+           	showScreenSharingButton: true,
+           	showTextChat: true,
+           	showUserList: true,
+           	maxUsers: 50,
+           	layout: "Auto",
+           	showLayoutButton: true,
+         
+            });
+                // Variable to keep track of the captions state
+                
+            
+                // ... Existing code ...
+            
+                // Function to handle toggling captions
+    function toggleCaptions() {
+        if (captionsEnabled) {
+            zp.turnOffCaptions();
+            captionToggleButton.textContent = 'Enable Captions';
+        } else {
+            zp.turnOnCaptions();
+            captionToggleButton.textContent = 'Disable Captions';
+        }
+        captionsEnabled = !captionsEnabled;
+    }
+    
+    // Function to handle speech recognition
+    function startSpeechRecognition() {
+        const recognition = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
+        recognition.lang = 'en-US'; // Set the language for speech recognition (you can change it as needed)
+    
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            console.log("Speech Recognized: ", transcript);
+            // Do something with the transcript, e.g., display it in a chat window or send it to the server.
+        };
+    
+        recognition.onerror = (event) => {
+            console.error("Speech Recognition Error:", event.error);
+        };
+    
+        recognition.start();
+    }
+    
+    // Add an event listener to the "Enable Captions" button
+    const captionToggleButton = document.getElementById('caption-toggle-button');
+    captionToggleButton.addEventListener('click', toggleCaptions);
+    
+    // Add an event listener to the "Enable Microphone" button
+     const microphoneButton = document.getElementById('microphone-toggle-button');
+    microphoneButton.addEventListener('click', () => {
+        startSpeechRecognition();
+    });
+    
+               
+    
+}
+
+                    
+
+</script>
+
+</html>
